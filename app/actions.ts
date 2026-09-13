@@ -1,6 +1,8 @@
 "use server";
 
 import crypto from "crypto";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE_NAME, createSessionToken } from "@/lib/session";
 
 export interface VerifyResult {
   success: boolean;
@@ -10,13 +12,13 @@ export interface VerifyResult {
 
 export async function verifyPassword(submittedPassword: string): Promise<VerifyResult> {
   const expectedPassword = process.env.SITE_PASSWORD;
-  const targetUrl = process.env.TARGET_URL || "https://sensoa-formation.super.site/";
+  const sessionSecret = process.env.SESSION_SECRET || expectedPassword;
 
   if (!expectedPassword) {
     console.error("Variable d'environnement SITE_PASSWORD non configurée.");
     return {
       success: false,
-      error: "Configuration serveur incomplète : la variable SITE_PASSWORD n'est pas définie.",
+      error: "Configuration serveur incomplète : variable SITE_PASSWORD absente.",
     };
   }
 
@@ -29,15 +31,28 @@ export async function verifyPassword(submittedPassword: string): Promise<VerifyR
 
   const isValid = crypto.timingSafeEqual(inputHash, expectedHash);
 
-  if (isValid) {
+  if (!isValid) {
     return {
-      success: true,
-      redirectUrl: targetUrl,
+      success: false,
+      error: "Mot de passe incorrect. Veuillez vérifier et réessayer.",
     };
   }
 
+  // Création du token de session sécurisé
+  const token = await createSessionToken(sessionSecret || "sensoa_default_secret_key");
+
+  // Enregistrement du cookie HTTP-Only
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30, // 30 jours
+  });
+
   return {
-    success: false,
-    error: "Mot de passe incorrect. Veuillez vérifier et réessayer.",
+    success: true,
+    redirectUrl: "/",
   };
 }
