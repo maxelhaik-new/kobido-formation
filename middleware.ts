@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/session";
 
-const SUPER_TARGET = process.env.SUPER_TARGET_URL || "https://sensoa-formation.super.site";
+const SUPER_TARGET = process.env.SUPER_TARGET_URL || "https://sensoa-kb-9x8f2.super.site";
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // 1. Laisser passer les fichiers d'actifs du portail local et favicon
-  if (pathname.startsWith("/_portal_assets") || pathname === "/favicon.ico") {
+  // 1. Laisser passer les fichiers d'actifs du portail local, images locales et favicon
+  if (
+    pathname.startsWith("/_portal_assets") ||
+    pathname.startsWith("/images") ||
+    pathname === "/favicon.ico"
+  ) {
     return NextResponse.next();
   }
 
@@ -48,8 +52,9 @@ export const config = {
     /*
      * Match all request paths except for:
      * - _portal_assets (local Next.js static files)
+     * - images (local static assets)
      * - favicon.ico
      */
-    "/((?!_portal_assets|favicon.ico).*)",
+    "/((?!_portal_assets|images|favicon.ico).*)",
   ],
 };
