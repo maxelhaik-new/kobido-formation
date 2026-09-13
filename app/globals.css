@@ -3,13 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #fdfbf7;
-  --foreground: #2d241e;
+  --primary-font: var(--font-quattrocento);
+  --secondary-font: var(--font-quicksand);
+  --color-text-default: #101010;
+  --color-text-default-light: #b54e71;
+  --color-bg-default: #ffffff;
+  --color-border-default: #f5dae3;
+  --border-radii-layout: 11px;
 }
 
 body {
-  color: var(--foreground);
-  background-color: var(--background);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-family: var(--font-quicksand), sans-serif;
+  color: var(--color-text-default);
+  background-color: var(--color-bg-default);
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-heading {
+  font-family: var(--font-quattrocento), Georgia, serif;
 }
